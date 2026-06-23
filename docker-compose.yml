@@ -1,0 +1,38 @@
+# 本機相依服務：PostgreSQL 16 (含 pgvector) 與 Redis。
+#   docker compose up -d
+# 應用程式本身用 `mvn spring-boot:run` 在宿主機執行（見 README）。
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: docrag-postgres
+    environment:
+      POSTGRES_DB: docrag
+      POSTGRES_USER: docrag
+      POSTGRES_PASSWORD: docrag
+    ports:
+      - "5432:5432"
+    volumes:
+      - docrag-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U docrag -d docrag"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: docrag-redis
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - docrag-redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  docrag-pgdata:
+  docrag-redisdata:

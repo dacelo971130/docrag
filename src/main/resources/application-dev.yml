@@ -1,0 +1,10 @@
+# dev profile（預設啟用）。本機開發用設定。
+logging:
+  level:
+    com.casper.docrag: DEBUG
+    org.springframework.web.servlet.mvc.method.annotation.SseEmitter: INFO
+
+# 本機開發若要改用 Ollama（embedding 與生成皆本機），覆寫：
+#   APP_EMBEDDING_BEAN=ollamaEmbeddingModel
+#   APP_LLM_BEAN=ollamaChatModel
+#   EMBEDDING_DIMENSION=768   （需重建資料庫）

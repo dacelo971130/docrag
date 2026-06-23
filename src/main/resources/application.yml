@@ -1,0 +1,108 @@
+spring:
+  application:
+    name: docrag
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+
+  servlet:
+    multipart:
+      max-file-size: 25MB
+      max-request-size: 25MB
+
+  # ===== 資料庫 (PostgreSQL 16 + pgvector) =====
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/docrag}
+    username: ${DB_USERNAME:docrag}
+    password: ${DB_PASSWORD:docrag}
+    hikari:
+      maximum-pool-size: 10
+      pool-name: docrag-pool
+
+  # ===== Flyway：embedding 維度以 placeholder 注入 schema =====
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    placeholders:
+      embedding_dimension: ${EMBEDDING_DIMENSION:1536}
+
+  # ===== 快取 (M4)：預設 Caffeine；'redis' profile 改 Redis =====
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=10000,expireAfterWrite=1h
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: 2s
+
+  # ===== Spring AI 2.0 model providers (ADR-007：僅作 adapter 來源) =====
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY:sk-placeholder}
+      embedding:
+        options:
+          model: ${OPENAI_EMBEDDING_MODEL:text-embedding-3-small}
+      chat:
+        options:
+          model: ${OPENAI_CHAT_MODEL:gpt-4o-mini}
+    ollama:
+      base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+      init:
+        pull-model-strategy: never
+      embedding:
+        options:
+          model: ${OLLAMA_EMBEDDING_MODEL:nomic-embed-text}
+      chat:
+        options:
+          model: ${OLLAMA_CHAT_MODEL:gemma2:2b}
+
+# ===== Actuator / 可觀測性 (M3) =====
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when_authorized
+  health:
+    redis:
+      enabled: false   # dev 不需 Redis；'redis' profile 會重新開啟
+
+# ===== 應用程式設定（皆可由環境變數覆寫） =====
+app:
+  embedding:
+    # Spring AI 的 EmbeddingModel bean 名稱：openAiEmbeddingModel | ollamaEmbeddingModel
+    bean: ${APP_EMBEDDING_BEAN:openAiEmbeddingModel}
+    # 必須與模型維度一致，並等於 Flyway 的 embedding_dimension。
+    dimension: ${EMBEDDING_DIMENSION:1536}
+  llm:
+    # Spring AI 的 ChatModel bean 名稱：openAiChatModel | ollamaChatModel | anthropicChatModel
+    bean: ${APP_LLM_BEAN:openAiChatModel}
+    max-retries: 2
+    retry-backoff-ms: 500
+    fallback-message: "抱歉，生成服務暫時無法使用，請稍後再試。"
+  chunking:
+    strategy: fixed         # 目前僅 fixed；語意分塊預留 (ADR-004)
+    chunk-size: 512         # 近似 token 數（見 ADR-004 分塊說明）
+    overlap: 64
+  query:
+    top-k: 5
+    min-similarity: 0.75    # 防線 1：檢索門檻 (ADR-010)，需依模型調校
+    no-answer-message: "文件中找不到相關資訊。"
+    post-validation: true   # 防線 4：後處理引用驗證
+  ratelimit:
+    enabled: true
+    backend: memory         # memory | redis (ADR-009)
+    per-ip:
+      capacity: 20
+      refill-tokens: 20
+      refill-period: 60s
+    global:
+      capacity: 200
+      refill-tokens: 200
+      refill-period: 60s
+    # 選用存取碼：非空時，/api/query/** 需帶 X-Access-Code 標頭
+    access-code: ${APP_ACCESS_CODE:}

@@ -1,0 +1,22 @@
+# redis profile：啟用 Redis 作為快取與分散式限流後端（ADR-009）。
+# 啟用方式：SPRING_PROFILES_ACTIVE=redis 或 -Dspring-boot.run.profiles=redis
+# 需要 Redis 在線（docker compose up -d redis）。
+spring:
+  cache:
+    type: redis
+    redis:
+      time-to-live: 1h
+      cache-null-values: false
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+management:
+  health:
+    redis:
+      enabled: true
+
+app:
+  ratelimit:
+    backend: redis

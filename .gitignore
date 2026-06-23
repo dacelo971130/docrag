@@ -1,0 +1,32 @@
+### Maven ###
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### IDE ###
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.settings/
+.project
+.classpath
+bin/
+
+### Spring Boot ###
+*.log
+logs/
+
+### Env / secrets ###
+.env
+.env.local
+*.local.yml
+
+### OS ###
+.DS_Store
+Thumbs.db
+
+### Uploaded files (local dev storage) ###
+/uploads/
