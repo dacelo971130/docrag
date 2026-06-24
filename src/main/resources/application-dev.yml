@@ -1,6 +1,7 @@
 # dev profile（預設啟用）。本機開發用設定。
 logging:
   level:
+    org.flywaydb: DEBUG
     com.casper.docrag: DEBUG
     org.springframework.web.servlet.mvc.method.annotation.SseEmitter: INFO
 

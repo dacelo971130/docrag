@@ -20,6 +20,8 @@ spring:
 
   # ===== Flyway：embedding 維度以 placeholder 注入 schema =====
   flyway:
+    default-schema: docrag
+    schemas: docrag
     enabled: true
     locations: classpath:db/migration
     placeholders:
