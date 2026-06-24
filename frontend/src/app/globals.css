@@ -32,7 +32,43 @@ body {
   font-size: 13px;
 }
 
-.ac-label { opacity: 0.7; white-space: nowrap; }
+.ac-label {
+  opacity: 0.7;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ac-tip {
+  position: relative;
+  font-size: 12px;
+  opacity: 0.6;
+  cursor: default;
+  line-height: 1;
+}
+
+.ac-tip::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  width: 240px;
+  background: #2c2c3e;
+  color: #e8e6f0;
+  font-size: 12px;
+  line-height: 1.6;
+  padding: 8px 11px;
+  border-radius: 6px;
+  white-space: normal;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.ac-tip:hover::after { opacity: 1; }
 
 .ac-wrap input {
   padding: 5px 10px;
