@@ -15,7 +15,7 @@ services:
       - docrag-pgdata:/var/lib/postgresql
     shm_size: "1gb"   # 平行建 HNSW 索引時，shm 需 >= maintenance_work_mem
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U docrag -d docrag"]
+      test: [ "CMD-SHELL", "pg_isready -U docrag -d docrag" ]
       interval: 5s
       timeout: 3s
       retries: 10
@@ -23,17 +23,27 @@ services:
   redis:
     image: redis:7-alpine
     container_name: docrag-redis
-    command: ["redis-server", "--appendonly", "yes"]
+    command: [ "redis-server", "--appendonly", "yes" ]
     ports:
       - "6379:6379"
     volumes:
       - docrag-redisdata:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 5s
       timeout: 3s
       retries: 10
 
+  ollama:
+    image: ollama/ollama:0.18.0
+    container_name: docrag-ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - docrag-ollama:/root/.ollama
+
 volumes:
   docrag-pgdata:
   docrag-redisdata:
+  docrag-ollama:
