@@ -1,9 +1,9 @@
-# 本機相依服務：PostgreSQL 16 (含 pgvector) 與 Redis。
+# 本機相依服務：PostgreSQL 18 (含 pgvector) 與 Redis。
 #   docker compose up -d
 # 應用程式本身用 `mvn spring-boot:run` 在宿主機執行（見 README）。
 services:
   postgres:
-    image: pgvector/pgvector:pg16
+    image: pgvector/pgvector:0.8.2-pg18
     container_name: docrag-postgres
     environment:
       POSTGRES_DB: docrag
@@ -12,7 +12,8 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - docrag-pgdata:/var/lib/postgresql/data
+      - docrag-pgdata:/var/lib/postgresql
+    shm_size: "1gb"   # 平行建 HNSW 索引時，shm 需 >= maintenance_work_mem
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U docrag -d docrag"]
       interval: 5s

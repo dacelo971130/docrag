@@ -15,10 +15,10 @@
     <artifactId>docrag</artifactId>
     <version>0.1.0</version>
     <name>docrag</name>
-    <description>RAG 文件問答系統 — 方案 A 後端 (Spring Boot 4.1 + Spring AI 2.0 + pgvector)</description>
+    <description>RAG 文件問答系統(Spring Boot 4.1 + Spring AI 2.0 + pgvector)</description>
 
     <properties>
-        <java.version>21</java.version>
+        <java.version>17</java.version>
         <spring-ai.version>2.0.0</spring-ai.version>
         <pdfbox.version>3.0.3</pdfbox.version>
         <bucket4j.version>8.19.0</bucket4j.version>
@@ -52,9 +52,12 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-jdbc</artifactId>
         </dependency>
+        <!-- Spring Boot 4 自動設定模組化：Flyway 的 auto-config 已獨立，
+             必須用 spring-boot-starter-flyway；單獨 flyway-core 不會觸發 migration
+             （Boot 3→4 破壞性變更，這也是先前「沒有建表」的原因）。 -->
         <dependency>
-            <groupId>org.flywaydb</groupId>
-            <artifactId>flyway-core</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-flyway</artifactId>
         </dependency>
         <dependency>
             <groupId>org.flywaydb</groupId>
@@ -78,12 +81,12 @@
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-starter-model-ollama</artifactId>
         </dependency>
-        <!-- 選用：Claude / Anthropic 生成模型。取消註解並設定 spring.ai.anthropic.api-key 即可。
+        <!-- Claude / Anthropic 生成模型：Spring AI 原生 Anthropic 整合（非 OpenAI 相容層）。
+             設定見 application.yml 的 spring.ai.anthropic；啟用時設 app.llm.bean=anthropicChatModel。 -->
         <dependency>
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-starter-model-anthropic</artifactId>
         </dependency>
-        -->
 
         <!-- ===== 文件解析：PDFBox (Markdown 直接讀取) ===== -->
         <dependency>

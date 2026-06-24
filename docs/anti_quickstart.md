@@ -9,9 +9,9 @@
 本專案是一個依據 **RAG 方案 A** 技術規格實作的**向量文件問答系統後端**。其架構設計重點在於**工程深度**與 **AI 基礎建設的隔離防護**，以防範大型語言模型（LLM）的幻覺，並確保系統的可擴展性。
 
 ### 1. 技術棧與相依性
-*   **語言與核心框架**：Java 21、Spring Boot 4.1.0。
+*   **語言與核心框架**：Java 17、Spring Boot 4.1.0。
 *   **AI 整合**：Spring AI 2.0.0（僅限於 adapter 層作為與 OpenAI/Ollama 串接工具，見 [ProviderConfig.java](file:///d:/project/demo/claude/docrag/src/main/java/com/casper/docrag/provider/ProviderConfig.java)）。
-*   **資料庫與向量檢索**：PostgreSQL 16 + pgvector，使用 **HNSW** 向量索引（見 [V1__init_schema.sql](file:///d:/project/demo/claude/docrag/src/main/resources/db/migration/V1__init_schema.sql)）。
+*   **資料庫與向量檢索**：PostgreSQL 18 + pgvector，使用 **HNSW** 向量索引（見 [V1__init_schema.sql](file:///d:/project/demo/claude/docrag/src/main/resources/db/migration/V1__init_schema.sql)）。
 *   **快取與分散式限流**：Caffeine (單機快取) / Redis (分散式快取/限流) + Bucket4j。
 *   **文件解析**：Apache PDFBox（解析 PDF 檔案）。
 
@@ -54,7 +54,7 @@
 請按照以下步驟在您的本機電腦（Windows 環境）上啟動並測試本專案。
 
 ### 步驟 1：確認環境要求
-*   **Java Runtime**: **JDK 21** (必須，因為專案內使用了 Java 21 特性且 [pom.xml](file:///d:/project/demo/claude/docrag/pom.xml#L21) 限制為 21)
+*   **Java Runtime**: **JDK 17**（Spring Boot 4.1 baseline；本機預設 JDK 即可，無需 toolchain / `JAVA_HOME`）
 *   **Docker Desktop**: 用於啟動資料庫與 Redis。
 *   **Maven**: 用於專案建置（若無本機 Maven，可使用專案目錄附帶的 `./mvnw` 腳本）。
 
@@ -64,7 +64,7 @@
 docker compose up -d
 ```
 這將在背景啟動兩個容器：
-1.  **PostgreSQL 16 (附帶 pgvector 擴充功能)**：埠位 `5432`。
+1.  **PostgreSQL 18 (附帶 pgvector 擴充功能)**：埠位 `5432`。
 2.  **Redis**：埠位 `6379`（快取與限流使用）。
 
 ### 步驟 3：設定本機環境變數
@@ -78,21 +78,16 @@ docker compose up -d
     ```
     *如果您希望全本機運行（離線），您可以參考 README 中有關 Ollama 的配置。*
 
-### 步驟 4：使用 Java 21 編譯並執行專案
-由於 Windows 系統的預設 JDK 可能仍是舊版本（例如 Java 17），您**必須在該 Powershell 視窗中將 `JAVA_HOME` 指向 Java 21**。
-在專案根目錄的 PowerShell 中執行：
+### 步驟 4：編譯並啟動專案（JDK 17）
+本機預設 `mvn` 即為 Java 17，直接執行即可，**無需設定 `JAVA_HOME` 或 toolchain**。
+
+> ⚠️ 啟動前 PostgreSQL 必須在線（步驟 2）；啟動時 **Flyway 會自動建表**（原理見《環境建置指南》§3）。
 
 ```powershell
-# 將環境變數 JAVA_HOME 切換為本機的 JDK 21 
-$env:JAVA_HOME='C:\Users\Casper\.jdks\openjdk-21.0.2'
-
-# 執行單元與整合測試，驗證邏輯與環境
-.\mvnw test
-
-# 啟動 Spring Boot 應用程式
-.\mvnw spring-boot:run
+mvn spring-boot:run
 ```
-啟動成功後，控制台會顯示 Spring Boot 啟動資訊，預設埠位為 `8080`。
+
+啟動後控制台會**持續顯示 log**（常駐伺服器，不會回到命令提示字元），預設埠位 `8080`。看到 `Started DocRagApplication` 即就緒——要打 API 請**另開一個終端機**。
 
 ---
 
