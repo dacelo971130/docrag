@@ -1,0 +1,115 @@
+### RAG 文件問答系統 - API 測試
+### 用法：IDEA 內建 HTTP Client 開啟此檔，每個請求上方會出現 ▶ 執行鈕點擊即可。
+### 跨平台、不需處理 shell 引號跳脫。可存進版控當 API 文件。
+
+### 變數定義（依環境調整）
+@ollamaHost = http://localhost:11434
+@apiHost = http://localhost:8080
+@docId = REPLACE_WITH_REAL_ID
+@accessCode = REPLACE_IF_ENABLED
+
+
+### ============================================================
+### 一、Ollama Embedding 驗證（本機服務，不需 API token）
+### ============================================================
+
+### 驗證 embedding API（舊版端點，欄位為 prompt）
+POST {{ollamaHost}}/api/embeddings
+Content-Type: application/json
+
+{
+  "model": "nomic-embed-text",
+  "prompt": "測試一段文字"
+}
+
+### 驗證 embedding API（新版端點，若上面回 404 改用這個，欄位為 input）
+POST {{ollamaHost}}/api/embed
+Content-Type: application/json
+
+{
+  "model": "nomic-embed-text",
+  "input": "測試一段文字"
+}
+
+
+### ============================================================
+### 二、文件管理
+### ============================================================
+
+### 上傳文件（非同步處理，回 202 + documentId）
+### 注意：把路徑換成實際檔案，Windows 路徑用正斜線較不易出錯
+POST {{apiHost}}/api/documents
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="file"; filename="your.pdf"
+
+< D:/project/demo/claude/docrag/your.pdf
+--boundary--
+
+### 查文件列表與狀態（READY 後即可提問）
+GET {{apiHost}}/api/documents
+
+### 刪除文件（chunks 由 FK 串接刪除）
+DELETE {{apiHost}}/api/documents/{{docId}}
+
+
+### ============================================================
+### 三、串流問答（SSE）
+### ============================================================
+
+### 串流問答 - 全範圍檢索
+POST {{apiHost}}/api/query/stream
+Content-Type: application/json
+
+{
+  "question": "這份文件在講什麼？"
+}
+
+### 串流問答 - 限定單一文件範圍（grounding 防線 2：scope 過濾）
+POST {{apiHost}}/api/query/stream
+Content-Type: application/json
+
+{
+  "question": "這份文件的重點是什麼？",
+  "documentScope": "{{docId}}"
+}
+
+### 串流問答 - 測試知識庫外問題（應回「找不到相關資訊」，驗證防線 1 檢索門檻）
+POST {{apiHost}}/api/query/stream
+Content-Type: application/json
+
+{
+  "question": "完全與文件無關的問題，例如今天天氣如何？"
+}
+
+### 串流問答 - 帶存取碼（若啟用了 access code 限流層）
+POST {{apiHost}}/api/query/stream
+Content-Type: application/json
+X-Access-Code: {{accessCode}}
+
+{
+  "question": "這份文件在講什麼？"
+}
+
+
+### ============================================================
+### 四、查詢歷史
+### ============================================================
+
+### 查詢歷史（含延遲、token 成本、引用片段）
+GET {{apiHost}}/api/query/history
+
+
+### ============================================================
+### 五、健康檢查與監控
+### ============================================================
+
+### 應用健康狀態（全 UP 代表依賴都接通）
+GET {{apiHost}}/actuator/health
+
+### metrics 總覽
+GET {{apiHost}}/actuator/metrics
+
+### Prometheus 格式指標（供 Grafana / OTel 擷取）
+GET {{apiHost}}/actuator/prometheus

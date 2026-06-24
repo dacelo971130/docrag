@@ -147,8 +147,12 @@ curl http://localhost:8080/api/documents
 
 ```sql
 SELECT version, description, success FROM flyway_schema_history;  -- 應有 1 / init schema / true
-SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';
+SELECT table_name FROM information_schema.tables WHERE table_schema = 'docrag';
 -- 應看到 documents / document_chunks / query_history
+
+-- 設定 search_path 為 public 避免奇怪的 $user,public schema
+show search_path;
+SET search_path = public;
 ```
 
 > 💡 IntelliJ 的資料庫樹是**快取**的：Flyway 建表後，要對該連線按右鍵 **Refresh** 才會顯示新表。而且務必確認你連的是 **docrag** 庫——連到別的庫當然看不到表。
@@ -187,8 +191,12 @@ app:
 ## 五、本機 LLM 選項（Ollama，可選）
 
 ```bash
-ollama pull nomic-embed-text   # embedding（768 維）
-ollama pull gemma2:2b          # 生成（依機器資源選）
+docker exec -it docrag-ollama ollama pull nomic-embed-text   # embedding model（768 維 把文字轉向量）
+docker exec -it docrag-ollama ollama list                    # 確認模型在
+docker logs docrag-ollama                                    # GPU 版可看到 CUDA available 訊息
+docker logs --tail 100 docrag-ollama                         # 即時看 log 看最近 N 行
+
+docker exec -it docrag-ollama ollama pull gemma2:2b          # 生成式 LLM（依機器資源選，回答問題 / 聊天 / 推理）
 # Ollama 預設在 localhost:11434
 ```
 

@@ -89,7 +89,70 @@ java -jar target/docrag-0.1.0.jar
 
 ### 4. 試打 API
 
+### CMD
 ```bash
+# 驗證 embedding API（Spring Boot 之後打這個端點）
+curl http://localhost:11434/api/embeddings \
+  -d '{"model": "nomic-embed-text", "prompt": "測試一段文字"}'
+
+# 上傳文件（非同步處理，回 202 + documentId）
+curl -F "file=@your.pdf" http://localhost:8080/api/documents
+
+# 查狀態（READY 後即可提問）
+curl http://localhost:8080/api/documents
+
+# 串流問答（SSE）
+curl -N -X POST http://localhost:8080/api/query/stream \
+  -H "Content-Type: application/json" \
+  -d '{"question":"這份文件在講什麼？"}'
+
+# 限定單一文件範圍（防線 2）
+curl -N -X POST http://localhost:8080/api/query/stream \
+  -H "Content-Type: application/json" \
+  -d '{"question":"...","documentScope":"<documentId>"}'
+
+# 查詢歷史
+curl http://localhost:8080/api/query/history
+
+# 刪除文件（chunks 由 FK 串接刪除）
+curl -X DELETE http://localhost:8080/api/documents/<documentId>
+```
+
+PowerShell
+```powershell
+# 驗證 embedding API
+Invoke-RestMethod -Uri http://localhost:11434/api/embeddings -Method Post `
+  -Body '{"model": "nomic-embed-text", "prompt": "測試一段文字"}' -ContentType "application/json"
+
+# 上傳文件（202 + documentId）
+curl.exe -F "file=@your.pdf" http://localhost:8080/api/documents
+
+# 查狀態（READY 後即可提問）
+Invoke-RestMethod -Uri http://localhost:8080/api/documents
+
+# 串流問答（SSE）
+curl.exe -N -X POST http://localhost:8080/api/query/stream `
+  -H "Content-Type: application/json" `
+  -d '{\"question\":\"這份文件在講什麼？\"}'
+
+# 限定單一文件範圍（防線 2）
+curl.exe -N -X POST http://localhost:8080/api/query/stream `
+  -H "Content-Type: application/json" `
+  -d '{\"question\":\"...\",\"documentScope\":\"<documentId>\"}'
+
+# 查詢歷史
+Invoke-RestMethod -Uri http://localhost:8080/api/query/history
+
+# 刪除文件
+Invoke-RestMethod -Uri http://localhost:8080/api/documents/<documentId> -Method Delete
+```
+
+Git Bash
+```bash
+# 驗證 embedding API（若回 404，改用新端點 /api/embed 且欄位改 input）
+curl http://localhost:11434/api/embeddings \
+  -d '{"model": "nomic-embed-text", "prompt": "測試一段文字"}'
+
 # 上傳文件（非同步處理，回 202 + documentId）
 curl -F "file=@your.pdf" http://localhost:8080/api/documents
 
