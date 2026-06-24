@@ -161,7 +161,13 @@ export default function Home() {
       <header className="header">
         <h1>DocRAG 文件問答</h1>
         <div className="ac-wrap">
-          <label htmlFor="ac-input" className="ac-label">存取碼</label>
+          <label htmlFor="ac-input" className="ac-label">
+            存取碼
+            <span
+              className="ac-tip"
+              data-tooltip="後端若啟用存取碼驗證，每次請求都會帶上 X-Access-Code header。未啟用時可留空。"
+            >ⓘ</span>
+          </label>
           <input
             id="ac-input"
             type="password"
@@ -320,10 +326,7 @@ export default function Home() {
               title: '解決痛點',
               summary: '語意搜尋 × LLM，讓私有文件成為可對話的知識庫',
               body: (
-                <>
-                  <p>傳統全文搜尋只能比對關鍵字，找不到語意相近但用詞不同的內容。大型語言模型雖然善於對話，卻只知道訓練資料截止前的知識，無法回答你的私有文件、內部規範或最新報告。</p>
-                  <p>這個系統把兩者結合：文件切片向量化後存入資料庫，提問時先用語意搜尋找到最相關的片段，再交給 LLM 生成具體、有憑有據的回答。不需要手動翻閱大量 PDF，也不需要把整份文件貼給 AI。</p>
-                </>
+                <p>傳統搜尋找關鍵字、LLM 不知道你的文件——這個系統把兩者結合，讓你直接用自然語言問私有文件裡的事。</p>
               ),
             },
             {
